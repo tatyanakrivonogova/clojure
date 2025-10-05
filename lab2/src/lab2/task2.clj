@@ -20,16 +20,19 @@
 
 (defn lazy-integral
   [f n]
-  (fn [x]
-    (let [h (/ x n)
-          iter-f (new-integral-from-prev f h)
-          seq (map
-           :prev-integral-val
-           (iterate
-             iter-f
-             (integral-iter-data. 0 1)))]
-      (+
-        (nth seq n)
-        ;; последняя трапеция считается отдельно, 
-        ;; так как ее высота в общем случае может быть не равна h
-        (trapezoid f (* h n) x)))))
+  (
+    fn [x]
+    (if (<= x 0)
+      0
+      (let [h (/ x n)
+            iter-f (new-integral-from-prev f h)
+            seq (map
+            :prev-integral-val
+            (iterate
+              iter-f
+              (integral-iter-data. 0 1)))]
+        (+
+          (nth seq n)
+          ;; последняя трапеция считается отдельно, 
+          ;; так как ее высота в общем случае может быть не равна h
+          (trapezoid f (* h n) x))))))
