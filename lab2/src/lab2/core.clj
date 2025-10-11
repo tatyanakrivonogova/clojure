@@ -25,8 +25,11 @@
     (doseq [[f-name f] test-functions]
       (doseq [x test-points]
           (println (str f-name " (x=" x ")"))
-          (measure-average-time #((memoized-integral f n) x) iterations)
+          (println "simple-integral")
           (measure-average-time #((simple-integral f n) x) iterations)
+          (println "memoized-integral")
+          (measure-average-time #((memoized-integral f n) x) iterations)
+          (println "lazy-integral")
           (measure-average-time #((lazy-integral f n) x) iterations)
       ))
 ))
