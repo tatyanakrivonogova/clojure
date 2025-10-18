@@ -43,6 +43,8 @@
   (time (doall (take 400 (lazy-parallel-filter odd? 4 500 (iterate inc 1)))))
   (println "   - take 500 (lazy-parallel-filter odd? 4 500 (iterate inc 1))")
   (time (doall (take 500 (lazy-parallel-filter odd? 4 500 (iterate inc 1)))))
+  (println "   - take 300 (lazy-parallel-filter odd? 4 500 (iterate inc 1))")
+  (time (doall (take 300 (lazy-parallel-filter odd? 4 500 (iterate inc 1)))))
 ))
 
 

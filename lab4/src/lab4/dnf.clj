@@ -56,9 +56,9 @@
                                 (constant 1)
                                 (constant 0))
         :else expr))
-        (logic-or? expr) (apply logic-or (map negation-equivalencies (args expr)))
-        (logic-and? expr) (apply logic-and (map negation-equivalencies (args expr)))
-        :else expr))
+      (logic-or? expr) (apply logic-or (map negation-equivalencies (args expr)))
+      (logic-and? expr) (apply logic-and (map negation-equivalencies (args expr)))
+      :else expr))
 
 (defn distributivity-law
   "(x || y) && (z || w) = (x && z) || (y && z) || (x && w) || (y && w)"
