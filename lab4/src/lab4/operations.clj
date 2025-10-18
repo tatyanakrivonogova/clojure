@@ -184,6 +184,28 @@
        (expr-to-str (second (args expr)))
        ")"))
 
+; NAND expression
+
+(defn logic-nand
+  "Constructor for NAND"
+  [expr1 expr2]
+  (list ::nand expr1 expr2))
+
+(defn logic-nand?
+  "Check if expression is NAND"
+  [expr]
+  (= (first expr) ::nand))
+
+(defn logic-nand-to-str
+  "Converts NAND to string"
+  [expr]
+  {:pre [logic-nand? expr]}
+  (str "("
+       (expr-to-str (first (args expr)))
+       " NAND "
+       (expr-to-str (second (args expr)))
+       ")"))
+
 (defn expr-to-str
   "Converting expression to string"
   [expr]
@@ -196,6 +218,7 @@
         ::or logic-or-to-str
         ::and logic-and-to-str
         ::impl logic-impl-to-str
+        ::nand logic-nand-to-str
     )
     handler (get rules-map (get-type expr) unknown_type)]
     (if (= handler unknown_type)

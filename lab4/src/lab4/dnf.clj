@@ -15,7 +15,8 @@
                     :lab4.operations/not logic-not
                     :lab4.operations/or logic-or
                     :lab4.operations/and logic-and
-                    :lab4.operations/impl logic-impl)
+                    :lab4.operations/impl logic-impl
+                    :lab4.operations/nand logic-nand)
                   constructor (get constructors expr-type unknow-constructor)
                   converted-args (map
                                           convert-logic-op
@@ -35,6 +36,17 @@
       (logic-or
         (logic-not (convert-logic-op (first-arg expr)))
         (convert-logic-op (second-arg expr))))))
+
+(defn convert-nand
+  "Convert NAND (x NAND y = !(x && y))"
+  []
+  (convert-operations-by-type
+    logic-nand?
+    (fn [convert-logic-op expr]
+      (logic-not
+        (logic-and
+          (convert-logic-op (first-arg expr))
+          (convert-logic-op (second-arg expr)))))))
 
 (defn negation-equivalencies
   "!(x || y) = !x && !y
@@ -178,7 +190,7 @@
 
 (defn replace-operations-with-base
   [expr]
-  (let [converting-rules (list (convert-implication))]
+  (let [converting-rules (list (convert-implication) (convert-nand))]
     (reduce
         (fn [expr rule]
             (rule expr))
@@ -210,7 +222,8 @@
                     :lab4.operations/not logic-not
                     :lab4.operations/or logic-or
                     :lab4.operations/and logic-and
-                    :lab4.operations/impl logic-impl)
+                    :lab4.operations/impl logic-impl
+                    :lab4.operations/nand logic-nand)
                 constructor (get constructors expr-type unknown-constructor)
                 substituted-args (map
                                           (fn [e]
