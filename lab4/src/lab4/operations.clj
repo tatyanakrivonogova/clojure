@@ -184,30 +184,6 @@
        (expr-to-str (second (args expr)))
        ")"))
 
-;; equal expression
-
-(defn logic-eq
-  "a == b"
-  [expr1 expr2]
-  (list ::eq expr1 expr2))
-
-(defn logic-eq?
-  "Check if eq"
-  [expr]
-  (= (first expr) ::eq))
-
-(defn logic-eq-to-str
-  "Converts eq to string"
-  [expr]
-  {:pre [(logic-eq? expr)]}
-  (str
-    "("
-    (expr-to-str (first-arg expr))
-    " == "
-    (expr-to-str (second-arg expr))
-    ")"
-    ))
-
 (defn expr-to-str
   "Converting expression to string"
   [expr]
@@ -220,7 +196,6 @@
         ::or logic-or-to-str
         ::and logic-and-to-str
         ::impl logic-impl-to-str
-        ::eq logic-eq-to-str
     )
     handler (get rules-map (get-type expr) unknown_type)]
     (if (= handler unknown_type)
@@ -233,5 +208,4 @@
 
 (defn print-expr
   [expr]
-  (println (expr-to-str expr))
-  expr)
+  (println (expr-to-str expr)))

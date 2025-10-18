@@ -2,7 +2,7 @@
   (:require [lab4.operations :refer :all]))
 
 (defn convert-operations-by-type
-  "converts all occurrences of the specified type operation inside an expression with convert-f"
+  "Returns function for converting all occurrences of the specified type operation inside an expression with convert-f"
   [instance-of-type? convert-f]
   (fn convert-logic-op [expr]
     (cond
@@ -15,8 +15,7 @@
                     :lab4.operations/not logic-not
                     :lab4.operations/or logic-or
                     :lab4.operations/and logic-and
-                    :lab4.operations/impl logic-impl
-                    :lab4.operations/eq logic-eq)
+                    :lab4.operations/impl logic-impl)
                   constructor (get constructors expr-type unknow-constructor)
                   converted-args (map
                                           convert-logic-op
@@ -36,21 +35,6 @@
       (logic-or
         (logic-not (convert-logic-op (first-arg expr)))
         (convert-logic-op (second-arg expr))))))
-
-;; (defn convert-eq
-;;   "(x == y) = ((!x && !y) || (x && y))"
-;;   []
-;;   (convert-operations-by-type
-;;     logic-eq?
-;;     (fn [convert-logic-op expr]
-;;       (logic-or
-;;         (logic-and
-;;           (convert-logic-op (first-arg expr))
-;;           (convert-logic-op (second-arg expr)))
-;;         (logic-and
-;;           (logic-not (convert-logic-op (first-arg expr)))
-;;           (logic-not (convert-logic-op (second-arg expr))))
-;;         ))))
 
 (defn negation-equivalencies
   "!(x || y) = !x && !y
@@ -103,16 +87,16 @@
     )
   )
 
-(defn combine-same-args
+(defn sort-args
   "Returns list of exprs of the same type on top level of expression
-  combine-same-args a && (b && (c || (d && e))) = (list a, b, (c || (d && e)))"
+  sort-args a && (b && (c || (d && e))) = (list a, b, (c || (d && e)))"
   [expr]
   (if (or (constant? expr) (variable? expr))
     (list expr)
     (mapcat
       (fn [inner-expr]
         (if (same-type? expr inner-expr)
-          (combine-same-args inner-expr)
+          (sort-args inner-expr)
           (list inner-expr)
           ))
       (args expr)
@@ -122,7 +106,7 @@
   "x && (y && z) = x && y && z"
   [expr]
   (if (or (logic-or? expr) (logic-and? expr))
-    (cons (get-type expr) (map decompose (combine-same-args expr)))
+    (cons (get-type expr) (map decompose (sort-args expr)))
     expr))
 
 (defn idempotent-law
@@ -147,8 +131,7 @@
                                 (and
                                   (constant? e)
                                   (= e c)))
-                              (args expr)))
-        ]
+                              (args expr)))]
     (cond
       (logic-and? expr) (cond
         (expr-args-has-constant expr (constant 0)) (constant 0)
@@ -189,15 +172,13 @@
         :else (apply logic-or (map constant-laws (args expr)))
       )
       :else expr
-      )
     )
   )
+)
 
 (defn replace-operations-with-base
   [expr]
-  (let [converting-rules (list (convert-implication) 
-                            ;;    (convert-eq)
-       )]
+  (let [converting-rules (list (convert-implication))]
     (reduce
         (fn [expr rule]
             (rule expr))
@@ -213,9 +194,9 @@
         (distributivity-law)
         (idempotent-law)
         (constant-laws)
-  ))
+))
 
-(defn substitute-vals
+(defn substitute-values
   "Substitute values of variables to expression"
   [expr vars-map]
   (cond
@@ -229,12 +210,11 @@
                     :lab4.operations/not logic-not
                     :lab4.operations/or logic-or
                     :lab4.operations/and logic-and
-                    :lab4.operations/impl logic-impl
-                    :lab4.operations/eq logic-eq)
+                    :lab4.operations/impl logic-impl)
                 constructor (get constructors expr-type unknown-constructor)
                 substituted-args (map
                                           (fn [e]
-                                            (substitute-vals e vars-map))
+                                            (substitute-values e vars-map))
                                           (args expr))
                 ]
             (if (= constructor unknown-constructor)
