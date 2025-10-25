@@ -11,7 +11,8 @@
     (is (= (logic-not (variable :x)) '(:lab4.operations/not (:lab4.operations/var :x))))
     (is (= (logic-or (variable :x) (variable :y)) '(:lab4.operations/or (:lab4.operations/var :x) (:lab4.operations/var :y))))
     (is (= (logic-and (variable :x) (variable :y)) '(:lab4.operations/and (:lab4.operations/var :x) (:lab4.operations/var :y))))
-    (is (= (logic-impl (variable :x) (variable :y)) '(:lab4.operations/impl (:lab4.operations/var :x) (:lab4.operations/var :y))))))
+    (is (= (logic-impl (variable :x) (variable :y)) '(:lab4.operations/impl (:lab4.operations/var :x) (:lab4.operations/var :y))))
+    (is (= (logic-nand (variable :x) (variable :y)) '(:lab4.operations/nand (:lab4.operations/var :x) (:lab4.operations/var :y))))))
 
 (deftest string-conversion-test
   (testing "Expression to string conversion"
@@ -20,7 +21,8 @@
     (is (= (expr-to-str (logic-not (variable :x))) "!x"))
     (is (= (expr-to-str (logic-or (variable :x) (variable :y))) "(x || y)"))
     (is (= (expr-to-str (logic-and (variable :x) (variable :y))) "(x && y)"))
-    (is (= (expr-to-str (logic-impl (variable :x) (variable :y))) "(x -> y)"))))
+    (is (= (expr-to-str (logic-impl (variable :x) (variable :y))) "(x -> y)"))
+    (is (= (expr-to-str (logic-nand (variable :x) (variable :y))) "(x NAND y)"))))
 
 (deftest implication-conversion-test
   (testing "Implication conversion"
@@ -28,6 +30,21 @@
     (let [expr (logic-impl (variable :x) (variable :y))
           result ((convert-implication) expr)
           expected-result (logic-or (logic-not (variable :x)) (variable :y))]
+        (is (= result expected-result)))
+))
+
+(deftest nand-conversion-test
+  (testing "NAND conversion"
+    ;; x NAND y = !(x && y)
+    (let [expr (logic-nand (variable :x) (variable :y))
+          result ((convert-nand) expr)
+          expected-result (logic-not (logic-and (variable :x) (variable :y)))]
+        (is (= result expected-result)))
+    
+    ;; NAND with constants
+    (let [expr (logic-nand (constant 1) (constant 0))
+          result ((convert-nand) expr)
+          expected-result (logic-not (logic-and (constant 1) (constant 0)))]
         (is (= result expected-result)))
 ))
 
@@ -139,6 +156,33 @@
                  (variable :z))
           result (dnf expr)
           expected-result (logic-or (logic-not (variable :x)) (logic-not (variable :y)) (variable :z))]
+        (is (= result expected-result)))
+
+    ;; x NAND y = !(x && y) = !x || !y
+    (let [expr (logic-nand (variable :x) (variable :y))
+          result (dnf expr)
+          expected-result (logic-or (logic-not (variable :x)) (logic-not (variable :y)))]
+        (is (= result expected-result)))
+    
+    ;; (x NAND y) && z = !(x && y) && z = (!x || !y) && z = (!x && z) || (!y && z)
+    (let [expr (logic-and 
+                 (logic-nand (variable :x) (variable :y))
+                 (variable :z))
+          result (dnf expr)
+          expected-result (logic-or 
+                           (logic-and (logic-not (variable :x)) (variable :z))
+                           (logic-and (logic-not (variable :y)) (variable :z)))]
+        (is (= result expected-result)))
+    
+    ;; (!x || y) NAND z = !((!x || y) && z) = !(!x || y) || !z = (x && !y) || !z
+    (let [expr (logic-nand 
+                 (logic-impl (variable :x) (variable :y))
+                 (variable :z))
+          result (dnf expr)
+          
+          expected-result (logic-or 
+                           (logic-and (variable :x) (logic-not (variable :y)))
+                           (logic-not (variable :z)))]
         (is (= result expected-result)))
 ))
 
